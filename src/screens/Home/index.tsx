@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { TextInput, Alert, FlatList } from "react-native";
 
 import { ListEmpty } from "../components/ListEmpty";
@@ -11,22 +13,30 @@ import { Container, Header, HeaderTitle } from "./styles";
 
 import { TaskProps } from "../../@types/types";
 
-import { useTheme } from "styled-components/native";
 import uuid from "react-native-uuid";
 
 export const Home = () => {
-  // useState
   const [list, setList] = useState<TaskProps[]>([]);
   const [taskName, setTaskName] = useState("");
   const [bgButton, setBgButton] = useState("PRIMARY");
   const [saveInput, SetSaveInput] = useState("");
 
-  // useRef
   const inputElement = useRef<TextInput>(null);
-  // useTheme
-  const theme = useTheme();
 
-  // useEffect
+  useEffect(() => {
+    getList();
+  }, []);
+
+  const getList = async () => {
+    const myListString = await AsyncStorage.getItem("@storage_Key");
+    let myList = myListString ? JSON.parse(myListString) : [];
+    setList(myList);
+  };
+
+  useEffect(() => {
+    const myListString = JSON.stringify(list);
+    AsyncStorage.setItem("@storage_Key", myListString);
+  }, [list]);
 
   useEffect(() => {
     if (taskName.length === 0 && bgButton === "SECONDARY") {
